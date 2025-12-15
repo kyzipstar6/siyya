@@ -1,0 +1,153 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <meta name="theme-color" content="#0b0f14" />
+  <title>Siyya — The Trade Game</title>
+
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+
+<body>
+  <!-- Top bar -->
+  <header class="topbar">
+    <div class="brand">
+      <div class="brand-mark">S</div>
+      <div class="brand-text">
+        <div class="brand-title">Siyya</div>
+        <div class="brand-sub">the trade game • Antaris Finances</div>
+      </div>
+    </div>
+
+    <nav class="nav">
+      <button class="nav-pill" type="button">File</button>
+      <button class="nav-pill" type="button">Edit</button>
+      <button class="nav-pill" type="button">View</button>
+    </nav>
+
+    <div class="status">
+      <span class="status-dot"></span>
+      <span class="status-text">Market: Simulated</span>
+    </div>
+  </header>
+
+  <main class="shell">
+    <!-- Control / KPI panel -->
+    <section class="card card-tight">
+      <div class="panel-head">
+        <div>
+          <div class="panel-title">Controls</div>
+          <div class="panel-sub">Choose trend mode, set volatility, and start the simulation.</div>
+        </div>
+
+        <div class="panel-actions">
+          <button id="startBtn" class="button primary-button" type="button">Start Simulation</button>
+        </div>
+      </div>
+
+      <div class="divider"></div>
+
+      <!-- Evolution buttons injected by JS -->
+      <div class="evol-wrap">
+        <div class="label-muted">Evolution</div>
+        <div id="evolutionButtons" class="btn-grid"></div>
+      </div>
+
+      <div class="divider"></div>
+
+      <div class="row row-2">
+        <div class="vol-box">
+          <div class="label-muted">Volatility</div>
+          <div class="vol-controls">
+            <textarea id="volInput" class="field" rows="1" spellcheck="false">100</textarea>
+            <button id="setVolBtn" class="button good-button" type="button">Apply</button>
+          </div>
+          <div class="help-text">Higher values create bigger random price movement.</div>
+        </div>
+
+        <div class="kpi-box">
+          <div class="label-muted">KPIs</div>
+          <div class="kpi-row">
+            <div class="kpi">
+              <div class="kpi-title">Clock</div>
+              <div id="timeLbl" class="kpi-value">Time: 00:00:00</div>
+            </div>
+
+            <div class="kpi">
+              <div class="kpi-title">Ordacoin</div>
+              <div id="ordaLbl" class="kpi-value">Ordacoin: 1.00300 USD</div>
+            </div>
+
+            <div class="kpi">
+              <div class="kpi-title">Virtuacoin</div>
+              <div id="virtuaLbl" class="kpi-value">VirtuaCoin: 1.00300 USD</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Charts -->
+    <section class="card">
+      <div class="panel-head">
+        <div>
+          <div class="panel-title">Charts</div>
+          <div class="panel-sub">Price history (live update every second).</div>
+        </div>
+
+        <div class="legend">
+          <span class="legend-item">
+            <span class="legend-swatch up"></span> Rising / Buy pressure
+          </span>
+          <span class="legend-item">
+            <span class="legend-swatch down"></span> Falling / Sell pressure
+          </span>
+          <span class="legend-item">
+            <span class="legend-swatch steady"></span> Steady
+          </span>
+        </div>
+      </div>
+
+      <div class="divider"></div>
+
+      <div class="charts-grid">
+        <article class="chart-card card">
+          <div class="chart-header">
+            <div class="chart-title">Ordacoin</div>
+            <div class="chart-sub">USD price over time</div>
+          </div>
+          <canvas id="ordaChart" width="520" height="260" aria-label="Ordacoin chart"></canvas>
+        </article>
+
+        <article class="chart-card card">
+          <div class="chart-header">
+            <div class="chart-title">Virtuacoin</div>
+            <div class="chart-sub">USD price over time</div>
+          </div>
+          <canvas id="virtuaChart" width="520" height="260" aria-label="Virtuacoin chart"></canvas>
+        </article>
+      </div>
+    </section>
+
+    <footer class="footer">
+      <div class="footer-left">
+        <span class="muted">©</span> <span id="year"></span>
+        <span class="muted">Antaris</span>
+      </div>
+      <div class="footer-right muted">
+        Tip: Try Rise Mode 3 + volatility 200 for a lively chart.
+      </div>
+    </footer>
+  </main>
+
+  <!-- script src in folder js -->
+  <script src="js/Clock.js"></script>
+  <script src="js/Simulator.js"></script>
+  <script src="js/Siyya.js"></script>
+
+  <script>
+    document.getElementById("year").textContent = new Date().getFullYear();
+  </script>
+</body>
+</html>
