@@ -1,37 +1,67 @@
 class Simulator {
+
+  // === Java enum EvolutionType ===
   static EvolutionType = Object.freeze({
-    F3: "F3",
-    F2: "F2",
-    F1: "F1",
     ST: "ST",
-    R3: "R3",
-    R2: "R2",
     R1: "R1",
+    R2: "R2",
+    R3: "R3",
+    F1: "F1",
+    F2: "F2",
+    F3: "F3",
   });
 
-  evolveSymbols(atomicDouble, evolutionRef, volAtomicInt) {
-    // Replace this with your real Simulator.java logic later.
-    // This is a reasonable placeholder that respects "trend" + "volatility".
-    const vol = Math.max(1, Number(volAtomicInt.get()) || 1);
-    const mode = evolutionRef.get();
+  constructor() {
+    // mirrors:
+    // ObjectProperty<EvolutionType> evolution = new SimpleObjectProperty<>(EvolutionType.ST);
+    this.evolution = new ObjectProperty(Simulator.EvolutionType.ST);
+  }
 
-    const strength = (() => {
-      switch (mode) {
-        case Simulator.EvolutionType.F3: return -3;
-        case Simulator.EvolutionType.F2: return -2;
-        case Simulator.EvolutionType.F1: return -1;
-        case Simulator.EvolutionType.ST: return 0;
-        case Simulator.EvolutionType.R1: return 1;
-        case Simulator.EvolutionType.R2: return 2;
-        case Simulator.EvolutionType.R3: return 3;
-        default: return 0;
-      }
-    })();
+  /**
+   * Port of:
+   * public void evolveSymbols(AtomicDouble symVal, ObjectProperty<EvolutionType> evol, AtomicInteger vol)
+   */
+  evolveSymbols(symVal, evol, vol) {
+    const acval = symVal.get();
+    const v = vol.get();
 
-    const noise = (Math.random() - 0.5) * (vol / 10000);
-    const drift = strength * (vol / 200000); // gentle drift
-    const next = Math.max(0, atomicDouble.get() + noise + drift);
+    let nval;
 
-    atomicDouble.set(next);
+    switch (evol.get()) {
+
+      case Simulator.EvolutionType.ST:
+        // acval * (1 + (-0.5 + (1 * Math.random())) / vol)
+        nval = acval * (1 + (-0.5 + Math.random()) / v);
+        break;
+
+      case Simulator.EvolutionType.R1:
+        nval = acval * (1 + (-0.42 + Math.random()) / v);
+        break;
+
+      case Simulator.EvolutionType.R2:
+        nval = acval * (1 + (-0.33 + Math.random()) / v);
+        break;
+
+      case Simulator.EvolutionType.R3:
+        nval = acval * (1 + (-0.25 + Math.random()) / v);
+        break;
+
+      case Simulator.EvolutionType.F1:
+        nval = acval * (1 + (-0.58 + Math.random()) / v);
+        break;
+
+      case Simulator.EvolutionType.F2:
+        nval = acval * (1 + (-0.66 + Math.random()) / v);
+        break;
+
+      case Simulator.EvolutionType.F3:
+        nval = acval * (1 + (-0.75 + Math.random()) / v);
+        break;
+
+      default:
+        return;
+    }
+
+    symVal.set(nval);
   }
 }
