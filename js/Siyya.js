@@ -152,7 +152,7 @@ class AreaChart {
 class SiyyaApp {
   constructor() {
     // model setup (same defaults as Java)
-    this.clock = new Clock();
+    //this.clock = new Clock();
     this.ordacoin = new AtomicDouble(1.003);
     this.virtuacoin = new AtomicDouble(1.003);
 
@@ -252,7 +252,7 @@ class SiyyaApp {
   startGuiUpdateLoops() {
     // labels update like your guiUpdate Timeline(1s)
     this._guiTimer = setInterval(() => {
-      this.timeLbl.textContent = "Time: " + this.clock.getTimeString();
+      //this.timeLbl.textContent = "Time: " + this.clock.getTimeString();
       this.ordaLbl.textContent = `Ordacoin: ${this.ordacoin.get().toFixed(5)} USD`;
       this.virtuaLbl.textContent = `VirtuaCoin: ${this.virtuacoin.get().toFixed(5)} USD`;
     }, 1000);
