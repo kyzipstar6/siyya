@@ -160,7 +160,12 @@ public class Siyya extends Application {
         Clock clock = new Clock();
         AtomicDouble ordacoin = new AtomicDouble (4003);
         AtomicDouble virtuacoin = new AtomicDouble (85803);
+        AtomicDouble[] prices = {ordacoin, virtuacoin};
+        
+        String coin1="Portcoin";
+        String coin2="Sensecoin";
 
+        String [] symbols = {coin1, coin2};
         Simulator sim = new Simulator();
         AtomicInteger cl = new AtomicInteger(1);
 
@@ -173,7 +178,7 @@ public class Siyya extends Application {
         startSim.setOnAction(e -> {
             // Start simulation logic here
            Timeline symevol = new Timeline(new KeyFrame(Duration.millis(500),"",e2->{ sim.evolveSymbols(ordacoin, evolution,vol);        sim.evolveSymbols(virtuacoin, evolution,vol);
-           })) ;symevol.setCycleCount(Animation.INDEFINITE);symevol.play(); clock.model(cl);
+           })) ;symevol.setCycleCount(Animation.INDEFINITE);symevol.play(); clock.model(cl,prices,symbols);
         });
         Button setVol = new Button("Set volatility");
         setVol.getStyleClass().add("good-button");
@@ -188,6 +193,7 @@ public class Siyya extends Application {
             EvolutionType.F1, EvolutionType.ST, EvolutionType.R3, EvolutionType.R2,
             EvolutionType.R1
         };
+       
         for (int i = 0; i<pEvol.length;i++){
             int fi = i;
             changeEvols[fi].setOnAction(e->{
@@ -221,9 +227,9 @@ public class Siyya extends Application {
         Menu viewMenu = new Menu("View");
         menuBar.getMenus().addAll(fileMenu, editMenu, viewMenu);
         List<StackedAreaChart<Number, Number>> charts = new ArrayList<>();
-        charts.add(createChart("Portcoin price",ordacoin));
-        charts.add(createChart("Sensecoin price",virtuacoin));
-        
+        charts.add(createChart(coin1+" price",ordacoin));
+        charts.add(createChart(coin2+" price",virtuacoin));
+
         HBox upchartContainer = new HBox();
         upchartContainer.setSpacing(20);
          VBox [] conts = {new VBox(lbls[0], dataLbls[0]), new VBox(lbls[1], dataLbls[1]), new VBox(lbls[2], dataLbls[2])};
@@ -273,6 +279,7 @@ public class Siyya extends Application {
         StackedAreaChart<Number, Number> StackedAreaChart = new StackedAreaChart<>(xAxis, yAxis);
         StackedAreaChart.getStyleClass().add("card");
         StackedAreaChart.setAnimated(false);
+
         xAxis.setLabel("Time");
         yAxis.setLabel(varName);
         StackedAreaChart.setCreateSymbols(false);
