@@ -1,2 +1,1 @@
-cd c:/Users/georg/Documents/java/ && javac -cp ".;speciesevolutionsimulator/lib/javafx-sdk-23.0.2/lib/*" -d tradingsimulator/bin tradingsimulator/src/com/antarisfinances/app/*.java && java --module-path ".;modeltest/bin;speciesevolutionsimulator/lib/javafx-sdk-23.0.2/lib/" --add-modules javafx.controls,javafx.fxml -cp ".;tradingsimulator/bin" com.antarisfinances.app.Siyya
-cmd /k
+
