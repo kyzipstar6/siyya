@@ -40,7 +40,7 @@ public class Siyya extends Application {
         final String css = """
             .root {
                 -fx-font-family: "Segoe UI", "Inter", "Arial";
-                -fx-background-color: #0b0f14;
+                -fx-background-color: #2a4d45ff;
             }
 
             /* Top menu */
@@ -120,7 +120,7 @@ public class Siyya extends Application {
             /* Charts (dark terminal look) */
             .chart { -fx-background-color: transparent; }
             .chart-plot-background {
-                -fx-background-color: #0b0f14;
+                -fx-background-color: #0a0505ff;
                 -fx-background-insets: 0;
                 -fx-background-radius: 12;
             }
@@ -137,11 +137,11 @@ public class Siyya extends Application {
             .chart-legend-item { -fx-text-fill: #94a3b8; }
 
             /* Series colors: green for first, cyan for second */
-            .default-color0.chart-series-area-fill { -fx-fill: rgba(34,197,94,0.15); }
-            .default-color0.chart-series-area-line { -fx-stroke: #22c55e; -fx-stroke-width: 2px; }
+            .default-color0.chart-series-area-fill { -fx-fill: rgba(34, 197, 94, 0.32); }
+            .default-color0.chart-series-area-line { -fx-stroke: #35c522ff; -fx-stroke-width: 2px; }
 
-            .default-color1.chart-series-area-fill { -fx-fill: rgba(56,189,248,0.15); }
-            .default-color1.chart-series-area-line { -fx-stroke: #38bdf8; -fx-stroke-width: 2px; }
+            .default-color1.chart-series-area-fill { -fx-fill: rgba(248, 85, 56, 0.37); }
+            .default-color1.chart-series-area-line { -fx-stroke: #c52c2cff; -fx-stroke-width: 2px; }
         """;
 
         try {
@@ -158,8 +158,8 @@ public class Siyya extends Application {
     @Override
     public void start(Stage stg) {
         Clock clock = new Clock();
-        AtomicDouble ordacoin = new AtomicDouble (1.003);
-        AtomicDouble virtuacoin = new AtomicDouble (1.003);
+        AtomicDouble ordacoin = new AtomicDouble (4003);
+        AtomicDouble virtuacoin = new AtomicDouble (85803);
 
         Simulator sim = new Simulator();
         AtomicInteger cl = new AtomicInteger(1);
@@ -167,7 +167,7 @@ public class Siyya extends Application {
         stg = new Stage();
         stg.setTitle("Siyya, the trade game");
         BorderPane bp = new BorderPane();
-        AtomicInteger vol = new AtomicInteger(100);
+        AtomicInteger vol = new AtomicInteger(500);
         Button startSim = new Button("Start Simulation");
         startSim.getStyleClass().add("primary-button");
         startSim.setOnAction(e -> {
@@ -207,6 +207,7 @@ public class Siyya extends Application {
         HBox labels = new HBox(12);
         Label [] lbls = {new Label("Clock"), new Label("Ordacoin"), new Label("Virtuacoin")};
         Label [] dataLbls = {new Label("Time: 00:00:00"), new Label(ordacoin.get()+" USD"), new Label(virtuacoin.get()+" USD")};
+        Label [] tousand = {};
         for (Label l : lbls) {
             l.getStyleClass().add("kpi-title");
         }
@@ -220,8 +221,8 @@ public class Siyya extends Application {
         Menu viewMenu = new Menu("View");
         menuBar.getMenus().addAll(fileMenu, editMenu, viewMenu);
         List<StackedAreaChart<Number, Number>> charts = new ArrayList<>();
-        charts.add(createChart("Ordacoin price",ordacoin));
-        charts.add(createChart("Virtuacoin price",virtuacoin));
+        charts.add(createChart("Portcoin price",ordacoin));
+        charts.add(createChart("Sensecoin price",virtuacoin));
         
         HBox upchartContainer = new HBox();
         upchartContainer.setSpacing(20);
@@ -250,12 +251,12 @@ public class Siyya extends Application {
 
         Timeline guiUpdate = new Timeline(new KeyFrame(Duration.seconds(1), e -> {
             dataLbls[0].setText("Time: " + clock.getTimeString());
-            dataLbls[1].setText(String.format("Ordacoin: %.5f USD", ordacoin.get()));
-            dataLbls[2].setText(String.format("VirtuaCoin: %.5f USD", virtuacoin.get()));
+            dataLbls[1].setText(String.format("Portcoin: %.5f USD", ordacoin.get()));
+            dataLbls[2].setText(String.format("Sensecoin: %.5f USD", virtuacoin.get()));
         })); guiUpdate.setCycleCount(Animation.INDEFINITE); guiUpdate.play();
 
         bp.setCenter(guiContainer); bp.setTop(menuBar);
-        Scene scene = new Scene(bp, 800, 600);
+        Scene scene = new Scene(bp);
         applyTradingTheme(scene);
         stg.setScene(scene);
         stg.show();
@@ -281,10 +282,12 @@ public class Siyya extends Application {
         StackedAreaChart.getData().add(series);
         StackedAreaChart.setTitle(varName + " over Time");
         
+        yAxis.setAutoRanging(false);
+
         Timeline chartUpdater = new Timeline(new KeyFrame(Duration.seconds(1), e -> {
             
                 series.getData().add(new XYChart.Data<>(series.getData().size(), val.get()));
-           
+                keepBoundsInRange(yAxis, series);
             
         }));
         AtomicDouble isfall = new AtomicDouble(val.get());
@@ -340,6 +343,19 @@ public class Siyya extends Application {
         chartUpdater.play();
         return StackedAreaChart;
 
+    }
+    
+    void keepBoundsInRange(NumberAxis yax, XYChart.Series<Number,Number> ser){
+        AtomicDouble sermax = new AtomicDouble((double)ser.getData().get(ser.getData().size()-1).getYValue());
+        AtomicDouble sermin = new AtomicDouble((double)ser.getData().get(ser.getData().size()-1).getYValue());
+
+        for (int i =0;i<ser.getData().size();i++){
+            double val = (double)ser.getData().get(i).getYValue();
+            if(sermax.get()<val) sermax.set(val);
+            if(sermin.get()>val) sermin.set(val);
+
+        }
+        yax.setUpperBound(sermax.get()); yax.setLowerBound(sermin.get());
     }
     public class AtomicDouble{
         double val = 0;
