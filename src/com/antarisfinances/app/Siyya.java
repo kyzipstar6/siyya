@@ -14,6 +14,10 @@ import javafx.stage.Stage;
 import javafx.util.Duration;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.property.ObjectProperty;
+
+
+import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -24,6 +28,8 @@ import com.antarisfinances.app.Clock;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
+
+import org.w3c.dom.Text;
 
 import com.antarisfinances.app.Simulator.EvolutionType;
 
@@ -158,14 +164,28 @@ public class Siyya extends Application {
     @Override
     public void start(Stage stg) {
         Clock clock = new Clock();
+
+        LoadedData ld = loadUserSymbols();
         AtomicDouble ordacoin = new AtomicDouble (4003);
         AtomicDouble virtuacoin = new AtomicDouble (85803);
         AtomicDouble[] prices = {ordacoin, virtuacoin};
+        List <AtomicDouble> priceslist = ld.getPrices();
+
+        
         
         String coin1="Portcoin";
         String coin2="Sensecoin";
 
         String [] symbols = {coin1, coin2};
+        List <String> symbolslist = ld.getNames();
+        if(symbolslist.size()<2){
+            symbolslist.add(coin1);
+            symbolslist.add(coin2);
+            priceslist.add(ordacoin);
+        priceslist.add(virtuacoin);
+
+        }
+        
         Simulator sim = new Simulator();
         AtomicInteger cl = new AtomicInteger(1);
 
@@ -177,8 +197,10 @@ public class Siyya extends Application {
         startSim.getStyleClass().add("primary-button");
         startSim.setOnAction(e -> {
             // Start simulation logic here
-           Timeline symevol = new Timeline(new KeyFrame(Duration.millis(500),"",e2->{ sim.evolveSymbols(ordacoin, evolution,vol);        sim.evolveSymbols(virtuacoin, evolution,vol);
-           })) ;symevol.setCycleCount(Animation.INDEFINITE);symevol.play(); clock.model(cl,prices,symbols);
+           Timeline symevol = new Timeline(new KeyFrame(Duration.millis(500),"",e2->{ 
+            
+            for (int i =0; i<priceslist.size(); i++){sim.evolveSymbols(priceslist.get(i), evolution,vol);  }      sim.evolveSymbols(virtuacoin, evolution,vol);
+           })) ;symevol.setCycleCount(Animation.INDEFINITE);symevol.play(); clock.model(cl,priceslist,symbolslist);
         });
         Button setVol = new Button("Set volatility");
         setVol.getStyleClass().add("good-button");
@@ -211,8 +233,21 @@ public class Siyya extends Application {
         bp.setBottom(startSim);
         HBox buttons = new HBox(5,changeEvols);
         HBox labels = new HBox(12);
-        Label [] lbls = {new Label("Clock"), new Label("Ordacoin"), new Label("Virtuacoin")};
-        Label [] dataLbls = {new Label("Time: 00:00:00"), new Label(ordacoin.get()+" USD"), new Label(virtuacoin.get()+" USD")};
+        Label [] lbls = new Label [priceslist.size()+1];
+        Label [] dataLbls = new Label [priceslist.size()+1];
+        lbls [0]=new Label("Clock");
+        for (int i = 0; i< lbls.length;i++){
+            lbls[i] = new Label();
+            lbls[i].setFont(new Font("Arial", 14));
+            lbls[i].setPadding(new Insets(0,0,0,10));
+            lbls[i].setMinWidth(120);
+            dataLbls[i] = new Label();
+            dataLbls[i].setFont(new Font("Arial", 16));
+            dataLbls[i].setPadding(new Insets(0,0,0,10));
+            dataLbls[i].setMinWidth(150);
+            if(i>0){
+                lbls[i].setText(symbolslist.get(i-1));}
+        }
         Label [] tousand = {};
         for (Label l : lbls) {
             l.getStyleClass().add("kpi-title");
@@ -225,22 +260,51 @@ public class Siyya extends Application {
         Menu fileMenu = new Menu("File");
         Menu editMenu = new Menu("Edit");
         Menu viewMenu = new Menu("View");
+
+        MenuItem editSymbols = new MenuItem("Edit Symbols");
+        editSymbols.setOnAction(e->{
+            setNamesAndPrices(symbolslist, priceslist);
+            saveUserSymbols(symbolslist, priceslist);
+        });
+        editMenu.getItems().add(editSymbols);
+
+
+
         menuBar.getMenus().addAll(fileMenu, editMenu, viewMenu);
         List<StackedAreaChart<Number, Number>> charts = new ArrayList<>();
-        charts.add(createChart(coin1+" price",ordacoin));
-        charts.add(createChart(coin2+" price",virtuacoin));
+        for(int i=0;i<symbolslist.size();i++){
+            charts.add(createChart(symbolslist.get(i)+" price",priceslist.get(i)));
+        }
+                
 
-        HBox upchartContainer = new HBox();
+        VBox upchartContainer = new VBox();
         upchartContainer.setSpacing(20);
-         VBox [] conts = {new VBox(lbls[0], dataLbls[0]), new VBox(lbls[1], dataLbls[1]), new VBox(lbls[2], dataLbls[2])};
+         VBox [] conts =new VBox[symbolslist.size()]; 
+        for (int i =0;i< conts.length;i++){
+            conts[i]= new VBox();
+            conts[i].setSpacing(10);conts[i].setPadding(new Insets(0,10,0,10));
+            conts[i].getStyleClass().add("card");
+            conts[i].getChildren().addAll(lbls[i], dataLbls[i]);
 
+        }
         VBox topPanel = new VBox(10, new HBox(10, buttons, volval, setVol), labels);
         topPanel.getStyleClass().add("card");
-        upchartContainer.getChildren().addAll(topPanel);
-        HBox downchartContainer = new HBox();
-                downchartContainer.getChildren().addAll(charts.get(0), charts.get(1));
+        VBox downchartContainer = new VBox();
+        
+        for (int i=0;i<charts.size();i++){
+            if (i%2==0){
+                upchartContainer.getChildren().add(charts.get(i));
+            }
+            else{
+                downchartContainer.getChildren().add(charts.get(i));
+            }
+        }
+        ScrollPane upscr = new ScrollPane(upchartContainer);
+        ScrollPane downscr = new ScrollPane(downchartContainer);
+upscr.setMaxHeight(400);
+downscr.setMaxHeight(400);
 
-        VBox chartContainer = new VBox(12, upchartContainer, downchartContainer);
+        VBox chartContainer = new VBox(12, topPanel, new HBox(5, upscr, downscr));
         chartContainer.setPadding(new Insets(16));
         chartContainer.getStyleClass().add("card");
         downchartContainer.setSpacing(20);
@@ -256,22 +320,120 @@ public class Siyya extends Application {
         guiContainer.getChildren().addAll( chartContainer);
 
         Timeline guiUpdate = new Timeline(new KeyFrame(Duration.seconds(1), e -> {
-            dataLbls[0].setText("Time: " + clock.getTimeString());
-            dataLbls[1].setText(String.format("Portcoin: %.5f USD", ordacoin.get()));
-            dataLbls[2].setText(String.format("Sensecoin: %.5f USD", virtuacoin.get()));
+            dataLbls[0].setText(clock.getTimeString());
+            for (int i = 0; i< priceslist.size();i++){
+                dataLbls[i+1].setText(String.format("%.5f", priceslist.get(i).get()));
+            }
         })); guiUpdate.setCycleCount(Animation.INDEFINITE); guiUpdate.play();
 
         bp.setCenter(guiContainer); bp.setTop(menuBar);
-        Scene scene = new Scene(bp);
+        Scene scene = new Scene(bp,1200,700);
         applyTradingTheme(scene);
         stg.setScene(scene);
+         stg.setOnCloseRequest(e->{
+            saveUserSymbols(symbolslist, priceslist);
+        });
         stg.show();
         
         // The simulation would typically run within a JavaFX Application thread.
         // Here we just set up the models. Actual rendering and application loop is omitted.
     }
 
-
+    public void setNamesAndPrices(List<String> names, List <AtomicDouble> prices){
+        Stage stg = new Stage();
+        stg.setTitle("Siyya, the trade game");
+        VBox vb = new VBox(5);
+        List <TextField> namefields = new ArrayList<>();
+        List <TextField> pricefields = new ArrayList<>();
+        for(int i=0;i<names.size();i++){
+            HBox hb = new HBox(5);
+            Label namelbl = new Label("Symbol name: ");
+            TextField namefield = new TextField(names.get(i));  
+            namefields.add(namefield);
+            TextField pricefield = new TextField(prices.get(i).get()+"");
+            pricefields.add(pricefield);
+            hb.getChildren().addAll(namelbl, namefield, pricefield);
+            vb.getChildren().add(hb);
+        }
+        Button addmore = new Button("Add more symbols");
+        addmore.setOnAction(e->{
+            HBox hb = new HBox(5);
+            Label namelbl = new Label("Symbol name: ");
+            TextField namefield = new TextField();
+            namefields.add(namefield);
+            TextField pricefield = new TextField();
+            pricefields.add(pricefield);
+            hb.getChildren().addAll(namelbl, namefield, pricefield);
+            vb.getChildren().add(hb);
+        });
+        Button savebtn = new Button("Save and close");
+        savebtn.setOnAction(e->{
+            if(names.size()<namefields.size()){
+                for(int i=names.size();i<namefields.size();i++){
+                    names.add(namefields.get(i).getText());
+                    prices.add(new AtomicDouble(Double.parseDouble(pricefields.get(i).getText())));
+                }
+            }
+            for(int i=0;i<namefields.size();i++){
+                names.set(i, namefields.get(i).getText());
+                prices.get(i).set(Double.parseDouble(pricefields.get(i).getText()));
+                prices.add(new AtomicDouble(0));
+            }
+            saveUserSymbols(names, prices);
+        
+        });
+        vb.getChildren().addAll(addmore, savebtn);
+        Scene scene = new Scene(vb);
+            applyTradingTheme(scene);
+       
+        stg.setScene(scene);
+        stg.show();
+    }
+    void saveUserSymbols(List<String> names, List<AtomicDouble> prices){
+        try {
+            new File("tradingsimulator\\files\\").mkdirs();
+            FileWriter wr = new FileWriter("tradingsimulator\\files\\user_symbols.txt", false);
+            for(int i=0;i<names.size();i++){
+                wr.write(names.get(i)+";"+prices.get(i).get()+"\n");
+            }
+            wr.close();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+    public class LoadedData{
+        List <String> names = new ArrayList<>();
+        List <AtomicDouble> prices = new ArrayList<>();
+        public LoadedData(List<String> n, List<AtomicDouble> p){
+            names=n;
+            prices=p;
+        }
+        public List<String> getNames(){
+            return names;
+        }
+        public List<AtomicDouble> getPrices(){
+            return prices;
+        }
+    }
+    LoadedData loadUserSymbols(){
+        List <String> names = new ArrayList<>();
+        List <AtomicDouble> prices = new ArrayList<>();
+        try {
+            File f = new File("tradingsimulator\\files\\user_symbols.txt");
+            if(!f.exists()){
+                f.createNewFile();
+            }
+            List<String> lines = Files.readAllLines(Path.of("tradingsimulator\\files\\user_symbols.txt"), StandardCharsets.UTF_8);
+            for(String line : lines){
+                String[] parts = line.split(";");
+                names.add(parts[0]);
+                prices.add(new AtomicDouble(Double.parseDouble(parts[1])));
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return new LoadedData(names, prices);
+    }
     StackedAreaChart<Number, Number> createChart(String varName, AtomicDouble val) {
          
         NumberAxis xAxis = new NumberAxis();
