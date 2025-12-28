@@ -63,7 +63,7 @@
             <textarea id="volInput" class="field" rows="1" spellcheck="false">100</textarea>
             <button id="setVolBtn" class="button good-button" type="button">Apply</button>
           </div>
-          <div class="help-text">Lower values create bigger random price movement.</div>
+          <div class="help-text">Higher values create bigger random price movement.</div>
         </div>
 
         <div class="kpi-box">
@@ -81,6 +81,12 @@
 
             <div class="kpi">
               <div class="kpi-title">Virtuacoin</div>
+              <div class="label-muted">Set asset name</div><textarea id="coin1NameInput" class="field" rows="1" spellcheck="false">Virtuacoin</textarea>
+              <div class="label-muted">Set asset price</div><textarea id="coin1PriceInput" class="field" rows="1" spellcheck="false">1.00300</textarea>
+              <button id="setNamesBtn" class="button good-button" type="button">Apply</button>
+              <div class="label-muted">Set asset name</div><textarea id="coin2NameInput" class="field" rows="1" spellcheck="false">Ordacoin</textarea>
+              <div class="label-muted">Set asset price</div><textarea id="coin2PriceInput" class="field" rows="1" spellcheck="false">1.00300</textarea>
+
               <div id="virtuaLbl" class="kpi-value">VirtuaCoin: 1.00300 USD</div>
             </div>
           </div>
@@ -142,7 +148,6 @@
   </main>
 
   <!-- script src in folder js -->
-  <script src="js/Clock.js"></script>
   <script src="js/Simulator.js"></script>
   <script src="js/Siyya.js"></script>
 
@@ -151,4 +156,3 @@
   </script>
 </body>
 </html>
-
