@@ -148,13 +148,28 @@ class AreaChart {
     ctx.fillText(min.toFixed(5), 6, padT + ph);
   }
 }
+class Clock {
+  constructor() {
+    this.seconds = 0;
+    this._timer = null;
+  }
+  model(cl) {
+    if (this._timer) return; // already running
+  }
+  getTimeString() {
+    const hrs = Math.floor(this.seconds / 3600);
+    const mins = Math.floor((this.seconds % 3600) / 60);
+    const secs = this.seconds % 60;
+    return `${String(hrs).padStart(2, '0')}:${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
+  }
+}
 
 class SiyyaApp {
   constructor() {
     // model setup (same defaults as Java)
-    //this.clock = new Clock();
-    this.ordacoin = new AtomicDouble(1.003);
-    this.virtuacoin = new AtomicDouble(1.003);
+    this.clock = new Clock();
+    this.ordacoin = new AtomicDouble(139.5);
+    this.virtuacoin = new AtomicDouble(1786.8);
 
     this.sim = new Simulator();
     this.cl = new AtomicInteger(1);
@@ -170,11 +185,21 @@ class SiyyaApp {
     this.volInput = document.getElementById("volInput");
     this.setVolBtn = document.getElementById("setVolBtn");
     this.startBtn = document.getElementById("startBtn");
+    this.setNamesBtn = document.getElementById("setNamesBtn");
+
     this.evolutionButtonsHost = document.getElementById("evolutionButtons");
 
     // charts
     this.ordaChart = new AreaChart(document.getElementById("ordaChart"), "Ordacoin");
     this.virtuaChart = new AreaChart(document.getElementById("virtuaChart"), "Virtuacoin");
+
+    this.coin1name = "KLM";
+    this.coin2name = "Martian Cupper";
+
+    const coin1NameInput = document.getElementById("coin1NameInput");
+    const coin1PriceInput = document.getElementById("coin1PriceInput");
+    const coin2NameInput = document.getElementById("coin2NameInput");
+    const coin2PriceInput = document.getElementById("coin2PriceInput");
 
     // initial point like series.getData().add(0, val)
     this.ordaChart.push(this.ordacoin.get());
@@ -190,6 +215,7 @@ class SiyyaApp {
     this.wireEvents();
     this.startGuiUpdateLoops(); // charts + labels update like your Timelines
   }
+  
 
   buildEvolutionButtons() {
     const labels = [
@@ -233,6 +259,15 @@ class SiyyaApp {
       const n = parseInt(this.volInput.value, 10);
       if (Number.isFinite(n)) this.vol.set(n);
     });
+    this.setNamesBtn.addEventListener("click", () => {
+      console.log("Applying new coin names and prices");
+      this.coin1name = coin1NameInput.value.trim();
+      this.coin2name = coin2NameInput.value.trim();
+      this.ordacoin.set(parseFloat(coin1PriceInput.value) || 1.003);
+      this.virtuacoin.set(parseFloat(coin2PriceInput.value) || 1.003);
+      this.ordaLbl.textContent = `${this.coin1name}: ${this.ordacoin.get().toFixed(5)} USD`;
+      this.virtuaLbl.textContent = `${this.coin2name}: ${this.virtuacoin.get().toFixed(5)} USD`;
+    });
 
     this.startBtn.addEventListener("click", () => this.startSimulation());
   }
@@ -248,13 +283,13 @@ class SiyyaApp {
 
     this.clock.model(this.cl);
   }
-
+  
   startGuiUpdateLoops() {
     // labels update like your guiUpdate Timeline(1s)
     this._guiTimer = setInterval(() => {
-      //this.timeLbl.textContent = "Time: " + this.clock.getTimeString();
-      this.ordaLbl.textContent = `Ordacoin: ${this.ordacoin.get().toFixed(5)} USD`;
-      this.virtuaLbl.textContent = `VirtuaCoin: ${this.virtuacoin.get().toFixed(5)} USD`;
+      this.timeLbl.textContent = "Time: " + this.clock.getTimeString();
+      this.ordaLbl.textContent = `${this.coin1name}: ${this.ordacoin.get().toFixed(5)} USD`;
+      this.virtuaLbl.textContent = `${this.coin2name}: ${this.virtuacoin.get().toFixed(5)} USD`;
     }, 1000);
 
     // charts update like chartUpdater Timeline(1s)
