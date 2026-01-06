@@ -146,7 +146,9 @@ class AreaChart {
     ctx.font = "12px Segoe UI, Inter, Arial";
     ctx.fillText(max.toFixed(5), 6, padT + 12);
     ctx.fillText(min.toFixed(5), 6, padT + ph);
+    
   }
+  
 }
 class Clock {
   constructor() {
@@ -167,24 +169,28 @@ class Clock {
 class SiyyaApp {
   constructor() {
     // model setup (same defaults as Java)
-    this.clock = new Clock();
-    this.ordacoin = new AtomicDouble(139.5);
-    this.virtuacoin = new AtomicDouble(1786.8);
+    
+    this.coin1 = new AtomicDouble(139.5);
+    this.coin2 = new AtomicDouble(1786.8);
 
     this.sim = new Simulator();
     this.cl = new AtomicInteger(1);
+    //this.ls = new LoadSave();
 
     this.vol = new AtomicInteger(100);
     this.evolution = new ObjectProperty(Simulator.EvolutionType.ST);
 
     // UI
-    this.timeLbl = document.getElementById("timeLbl");
-    this.ordaLbl = document.getElementById("ordaLbl");
-    this.virtuaLbl = document.getElementById("virtuaLbl");
+    this.timeLbl = document.getElementById("hour");
+    this.coin1Lbl = document.getElementById("coin1Lbl");
+    this.coin2Lbl = document.getElementById("coin2Lbl");
+
 
     this.volInput = document.getElementById("volInput");
     this.setVolBtn = document.getElementById("setVolBtn");
     this.startBtn = document.getElementById("startBtn");
+   
+
     this.setNamesBtn = document.getElementById("setNamesBtn");
 
     this.evolutionButtonsHost = document.getElementById("evolutionButtons");
@@ -200,10 +206,13 @@ class SiyyaApp {
     const coin1PriceInput = document.getElementById("coin1PriceInput");
     const coin2NameInput = document.getElementById("coin2NameInput");
     const coin2PriceInput = document.getElementById("coin2PriceInput");
+     const loadBtn = document.getElementById("loadBtn");
+    const saveBtn = document.getElementById("saveBtn");
+    const resetBtn = document.getElementById("resetBtn");
 
     // initial point like series.getData().add(0, val)
-    this.ordaChart.push(this.ordacoin.get());
-    this.virtuaChart.push(this.virtuacoin.get());
+    this.ordaChart.push(this.coin1.get());
+    this.virtuaChart.push(this.coin2.get());
     this.ordaChart.draw();
     this.virtuaChart.draw();
 
@@ -255,6 +264,8 @@ class SiyyaApp {
   }
 
   wireEvents() {
+   
+    const ls = new LoadSave();
     this.setVolBtn.addEventListener("click", () => {
       const n = parseInt(this.volInput.value, 10);
       if (Number.isFinite(n)) this.vol.set(n);
@@ -263,13 +274,16 @@ class SiyyaApp {
       console.log("Applying new coin names and prices");
       this.coin1name = coin1NameInput.value.trim();
       this.coin2name = coin2NameInput.value.trim();
-      this.ordacoin.set(parseFloat(coin1PriceInput.value) || 1.003);
-      this.virtuacoin.set(parseFloat(coin2PriceInput.value) || 1.003);
-      this.ordaLbl.textContent = `${this.coin1name}: ${this.ordacoin.get().toFixed(5)} USD`;
-      this.virtuaLbl.textContent = `${this.coin2name}: ${this.virtuacoin.get().toFixed(5)} USD`;
+      this.coin1.set(parseFloat(coin1PriceInput.value) || 1.003);
+      this.coin2.set(parseFloat(coin2PriceInput.value) || 1.003);
+      this.coin1Lbl.textContent = `${this.coin1name}: ${this.coin1.get().toFixed(5)} USD`;
+      this.coin2Lbl.textContent = `${this.coin2name}: ${this.coin2.get().toFixed(5)} USD`;
     });
 
     this.startBtn.addEventListener("click", () => this.startSimulation());
+    saveBtn.addEventListener("click", () => ls.wsimSaveCurrentUserSnapshot());
+    loadBtn.addEventListener("click", () => ls.wsimLoadLastSnapshot());
+    resetBtn.addEventListener("click", () => this.reset());
   }
 
   startSimulation() {
@@ -277,25 +291,45 @@ class SiyyaApp {
     if (this._evolveTimer) return;
 
     this._evolveTimer = setInterval(() => {
-      this.sim.evolveSymbols(this.ordacoin, this.evolution, this.vol);
-      this.sim.evolveSymbols(this.virtuacoin, this.evolution, this.vol);
+      this.sim.evolveSymbols(this.coin1, this.evolution, this.vol);
+      this.sim.evolveSymbols(this.coin2, this.evolution, this.vol);
     }, 500);
 
-    this.clock.model(this.cl);
+  }
+  reset(){
+    
+    const coin1n = document.getElementById("coin1n");
+    const coin2n = document.getElementById("coin2n");
+    this.coin1.set(139.5);
+    this.coin2.set(1786.8);
+    this.ordaChart = new AreaChart(document.getElementById("ordaChart"), "Ordacoin");
+    this.coin1name = "Coin 1";
+    this.coin2name = "Coin 2";
+
+    coin1n.textContent = this.coin1name;
+    coin2n.textContent = this.coin2name;
+
+    this.coin1Lbl.textContent = `${this.coin1.get()} USD`;
+    this.coin2Lbl.textContent = `${this.coin2.get()} USD`;
+
   }
   
   startGuiUpdateLoops() {
     // labels update like your guiUpdate Timeline(1s)
     this._guiTimer = setInterval(() => {
-      this.timeLbl.textContent = "Time: " + this.clock.getTimeString();
-      this.ordaLbl.textContent = `${this.coin1name}: ${this.ordacoin.get().toFixed(5)} USD`;
-      this.virtuaLbl.textContent = `${this.coin2name}: ${this.virtuacoin.get().toFixed(5)} USD`;
+     
+      this.coin1Lbl.textContent = (this.coin1.get() < 10) ? `${this.coin1.get().toFixed(5)} USD` : (this.coin1.get()>10 &&
+    this.coin1.get()<100)? `${this.coin1.get().toFixed(4)} USD`: `${this.coin1.get().toFixed(3)} USD`
+      ;
+      this.coin2Lbl.textContent = (this.coin2.get() < 10) ? `${this.coin2.get().toFixed(5)} USD` : (this.coin2.get()>10 &&
+    this.coin2.get()<100)? `${this.coin2.get().toFixed(4)} USD`: `${this.coin2.get().toFixed(3)} USD`
+      ;
     }, 1000);
 
     // charts update like chartUpdater Timeline(1s)
     this._chartTimer = setInterval(() => {
-      const o = this.ordacoin.get();
-      const v = this.virtuacoin.get();
+      const o = this.coin1.get();
+      const v = this.coin2.get();
 
       this.ordaChart.push(o);
       this.virtuaChart.push(v);
@@ -309,7 +343,114 @@ class SiyyaApp {
     }, 1000);
   }
 }
+class LoadSave {
+  constructor() {
+    // placeholder for future load/save functionality
+     const WSIM_USERS_KEY = "wsim_users_v1";
+    const WSIM_CURRENT_USER_KEY = "wsim_current_user_v1";
+    const WSIM_USER_SNAPSHOTS_KEY = "wsim_user_snapshots_v1";
+    const coin1Span = document.getElementById("coin1Lbl");
+  const coin1Name = document.getElementById("coin1n");
+  const coin2Span = document.getElementById("coin2Lbl");
+  const coin2Name = document.getElementById("coin2n");
 
+  // Time display
+  const dayInput = document.getElementById("day");
+  const monthInput = document.getElementById("month");
+  const hourInput = document.getElementById("hour");
+  const minuteInput = document.getElementById("minute");
+
+  }
+ 
+
+  wsimLoadUserSnapshots() {
+  const raw = localStorage.getItem(WSIM_USER_SNAPSHOTS_KEY);
+  return raw ? JSON.parse(raw) : {};
+}
+
+wsimSaveUserSnapshots(data) {
+  localStorage.setItem(WSIM_USER_SNAPSHOTS_KEY, JSON.stringify(data));
+}
+wsimBuildCurrentSnapshot() {
+  // Main "displayed" weather variables
+  
+
+  return {
+    savedAt: new Date().toISOString(),
+
+    display: {
+      coin1Span: coin1Span ? coin1Span.textContent : null,
+      coin2Span: coin2Span ? coin2Span.textContent : null,
+      coin1Name: coin1Name ? coin1Name.textContent : null,
+      coin2Name: coin2Name ? coin2Name.textContent : null
+    },
+
+    time: {
+      hourText: hourInput ? hourInput.value : null,
+      minuteText: minuteInput ? minuteInput.value : null,
+      dayText: dayInput ? dayInput.value : null,
+      monthText: monthInput ? monthInput.value : null
+    }
+  };
+}
+wsimGetCurrentUser() {
+  const raw = localStorage.getItem(WSIM_CURRENT_USER_KEY);
+  return raw ? JSON.parse(raw) : null;
+}
+// Save one snapshot for the current user
+wsimSaveCurrentUserSnapshot() {
+ // const current = wsimGetCurrentUser();
+  //if (!current || !current.username) {
+    //return { ok: false, message: "You need to be logged in to save." };
+//  }
+
+  const username = current.username;
+  const allSnapshots = wsimLoadUserSnapshots();
+  if (!allSnapshots[username]) {
+    allSnapshots[username] = [];
+  }
+
+  const snapshot = wsimBuildCurrentSnapshot();
+  allSnapshots[username].push(snapshot);
+
+  wsimSaveUserSnapshots(allSnapshots);
+  return { ok: true, message: "Weather + chart data saved for user." };
+}
+
+// Optional helper: get all snapshots for current user
+wsimGetCurrentUserSnapshots() {
+  const current = wsimGetCurrentUser();
+  if (!current || !current.username) return [];
+  const allSnapshots = wsimLoadUserSnapshots();
+  return allSnapshots[current.username] || [];
+}
+wsimLoadLastSnapshot() {
+  const snaps = wsimGetCurrentUserSnapshots();
+  const siyya = new SiyyaApp();
+
+  if (!snaps.length) {
+    return { ok: false, message: "No saved session found." };
+  }
+
+  const snap = snaps[snaps.length - 1];
+
+  // ---- restore inputs (source of truth) ----
+  const setVal = (id, v) => {
+    const el = document.getElementById(id);
+    if (el && v !== null && v !== undefined) el.value = v;
+  };
+
+  // ---- sync simulator variables ----
+  this.siyya.coin1.set(parseFloat(snap.display.coin1Span.split(" ").replace(/[^0-9.-]/g, '')));
+  this.siyya.coin2.set(parseFloat(snap.display.coin2Span.split(" ").replace(/[^0-9.-]/g, '')));
+  this.siyya.coin1n.textContent = snap.display.coin1Name;
+  this.siyya.coin2n.textContent = snap.display.coin2Name;
+
+  
+
+  return { ok: true, message: "Last session restored." };
+}
+}
 // boot
 window.addEventListener("DOMContentLoaded", () => {
   new SiyyaApp();
