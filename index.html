@@ -21,9 +21,9 @@
     </div>
 
     <nav class="nav">
-      <button class="nav-pill" type="button">File</button>
-      <button class="nav-pill" type="button">Edit</button>
-      <button class="nav-pill" type="button">View</button>
+      <button class="nav-pill" type="button", id="loadBtn">Load</button>
+      <button class="nav-pill" type="button" id="saveBtn">Save</button>
+      <button class="nav-pill" type="button" id="resetBtn">Reset</button>
     </nav>
 
     <div class="status">
@@ -71,23 +71,26 @@
           <div class="kpi-row">
             <div class="kpi">
               <div class="kpi-title">Clock</div>
-              <div id="timeLbl" class="kpi-value">Time: 00:00:00</div>
+              <div id="day" class="kpi-value">01</div>              <div id="month" class="kpi-value">/01 </div>
+              <div id="hour" class="kpi-value">00:</div>
+              <div id="minute" class="kpi-value">00</div>
+
             </div>
 
             <div class="kpi">
-              <div class="kpi-title">Ordacoin</div>
-              <div id="ordaLbl" class="kpi-value">Ordacoin: 1.00300 USD</div>
+              <div class="kpi-title", id="coin1n">Coin1</div>
+              <div id="coin1Lbl" class="kpi-value">1.00300 USD</div>
             </div>
 
             <div class="kpi">
-              <div class="kpi-title">Virtuacoin</div>
-              <div class="label-muted">Set asset name</div><textarea id="coin1NameInput" class="field" rows="1" spellcheck="false">Virtuacoin</textarea>
-              <div class="label-muted">Set asset price</div><textarea id="coin1PriceInput" class="field" rows="1" spellcheck="false">1.00300</textarea>
+              <div class="kpi-title", id="coin2n">Coin2</div>
+              <div class="label-muted">Set asset name</div><textarea id="coin1NameInput" class="field" rows="1" spellcheck="false">Coin1</textarea>
+              <div class="label-muted">Set asset price</div><textarea id="coin1PriceInput" class="field" rows="1" spellcheck="false">897.300</textarea>
               <button id="setNamesBtn" class="button good-button" type="button">Apply</button>
-              <div class="label-muted">Set asset name</div><textarea id="coin2NameInput" class="field" rows="1" spellcheck="false">Ordacoin</textarea>
-              <div class="label-muted">Set asset price</div><textarea id="coin2PriceInput" class="field" rows="1" spellcheck="false">1.00300</textarea>
+              <div class="label-muted">Set asset name</div><textarea id="coin2NameInput" class="field" rows="1" spellcheck="false">Coin2</textarea>
+              <div class="label-muted">Set asset price</div><textarea id="coin2PriceInput" class="field" rows="1" spellcheck="false">8700</textarea>
 
-              <div id="virtuaLbl" class="kpi-value">VirtuaCoin: 1.00300 USD</div>
+              <div id="coin2Lbl" class="kpi-value">1.00300 USD</div>
             </div>
           </div>
         </div>
@@ -120,18 +123,18 @@
       <div class="charts-grid">
         <article class="chart-card card">
           <div class="chart-header">
-            <div class="chart-title">Ordacoin</div>
+            <div class="chart-title", id ="coin1chtit">Coin1</div>
             <div class="chart-sub">USD price over time</div>
           </div>
-          <canvas id="ordaChart" width="520" height="260" aria-label="Ordacoin chart"></canvas>
+          <canvas id="ordaChart" width="520" height="260" aria-label="Coin1 chart"></canvas>
         </article>
 
         <article class="chart-card card">
           <div class="chart-header">
-            <div class="chart-title">Virtuacoin</div>
+            <div class="chart-title", id="coin2chtit">Coin2</div>
             <div class="chart-sub">USD price over time</div>
           </div>
-          <canvas id="virtuaChart" width="520" height="260" aria-label="Virtuacoin chart"></canvas>
+          <canvas id="virtuaChart" width="520" height="260" aria-label="Coin2 chart"></canvas>
         </article>
       </div>
     </section>
